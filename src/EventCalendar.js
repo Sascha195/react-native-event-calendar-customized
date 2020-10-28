@@ -1,4 +1,3 @@
-// @flow
 import {
   VirtualizedList,
   View,
@@ -8,6 +7,7 @@ import {
 } from 'react-native';
 import _ from 'lodash';
 import moment from 'moment';
+import 'moment/locale/de'
 import React from 'react';
 
 import styleConstructor from './style';
@@ -150,18 +150,13 @@ export default class EventCalendar extends React.Component {
     const leftIcon = this.props.headerIconLeft ? (
       this.props.headerIconLeft
     ) : (
-      <Image source={require('./back.png')} style={this.styles.arrow} />
-    );
+        <Image source={require('./back.png')} style={this.styles.arrow} />
+      );
     const rightIcon = this.props.headerIconRight ? (
       this.props.headerIconRight
     ) : (
-      <Image source={require('./forward.png')} style={this.styles.arrow} />
-    );
-
-    let headerText = upperCaseHeader
-      ? this.state.date.format(formatHeader || 'DD MMMM YYYY').toUpperCase()
-      : this.state.date.format(formatHeader || 'DD MMMM YYYY');
-
+        <Image source={require('./forward.png')} style={this.styles.arrow} />
+      );
     return (
       <View style={[this.styles.container, { width }]}>
         <View style={this.styles.header}>
@@ -172,7 +167,8 @@ export default class EventCalendar extends React.Component {
             {leftIcon}
           </TouchableOpacity>
           <View style={this.styles.headerTextContainer}>
-            <Text style={this.styles.headerText}>{headerText}</Text>
+            <Text style={[this.styles.headerText, this.props.headerTitleStyle]}>{moment(this.state.date).format('dddd')}</Text>
+            <Text style={[this.styles.headerText, this.props.headerSubtitleStyle]}>{moment(this.state.date).format('DD. MMMM YYYY')}</Text>
           </View>
           <TouchableOpacity
             style={this.styles.arrowButton}
@@ -194,7 +190,8 @@ export default class EventCalendar extends React.Component {
           horizontal
           pagingEnabled
           renderItem={this._renderItem.bind(this)}
-          style={{ width: width }}
+          style={{ width: width, backgroundColor: 'rgba(5, 0, 2, 0.05)' }}
+          scrollEnabled={false}
           onMomentumScrollEnd={event => {
             const index = parseInt(event.nativeEvent.contentOffset.x / width);
             const date = moment(this.props.initDate).add(
