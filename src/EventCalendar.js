@@ -17,6 +17,7 @@ import DayView from './DayView';
 export default class EventCalendar extends React.Component {
   constructor(props) {
     super(props);
+    this.calendarRef = React.createRef();
 
     const start = props.start ? props.start : 0;
     const end = props.end ? props.end : 24;
@@ -26,6 +27,7 @@ export default class EventCalendar extends React.Component {
       date: moment(this.props.initDate),
       index: this.props.size,
     };
+
   }
 
   componentDidMount() {
@@ -41,7 +43,7 @@ export default class EventCalendar extends React.Component {
   }
 
   static defaultProps = {
-    size: 30,
+    size: 10,
     initDate: new Date(),
     formatHeader: 'DD MMMM YYYY',
   };
@@ -68,9 +70,7 @@ export default class EventCalendar extends React.Component {
   _renderItem({ index, item }) {
     const {
       width,
-      format24h,
       initDate,
-      scrollToFirst = true,
       start = 0,
       end = 24,
     } = this.props;
@@ -79,7 +79,6 @@ export default class EventCalendar extends React.Component {
       <DayView
         date={date}
         index={index}
-        format24h={format24h}
         formatHeader={this.props.formatHeader}
         headerStyle={this.props.headerStyle}
         renderEvent={this.props.renderEvent}
@@ -87,7 +86,6 @@ export default class EventCalendar extends React.Component {
         events={item}
         width={width}
         styles={this.styles}
-        scrollToFirst={scrollToFirst}
         start={start}
         end={end}
       />
@@ -102,7 +100,7 @@ export default class EventCalendar extends React.Component {
       index - this.props.size,
       'days'
     );
-    this.refs.calendar.scrollToIndex({ index, animated: false });
+    this.calendarRef.current.scrollToIndex({ index, animated: false });
     this.setState({ index, date });
   }
 
@@ -142,21 +140,10 @@ export default class EventCalendar extends React.Component {
       width,
       virtualizedListProps,
       events,
-      initDate,
-      formatHeader,
-      upperCaseHeader = false,
     } = this.props;
 
-    const leftIcon = this.props.headerIconLeft ? (
-      this.props.headerIconLeft
-    ) : (
-        <Image source={require('./back.png')} style={this.styles.arrow} />
-      );
-    const rightIcon = this.props.headerIconRight ? (
-      this.props.headerIconRight
-    ) : (
-        <Image source={require('./forward.png')} style={this.styles.arrow} />
-      );
+    const leftIcon = this.props.headerIconLeft
+    const rightIcon = this.props.headerIconRight
     return (
       <View style={[this.styles.container, { width }]}>
         <View style={this.styles.header}>
@@ -178,7 +165,7 @@ export default class EventCalendar extends React.Component {
           </TouchableOpacity>
         </View>
         <VirtualizedList
-          ref="calendar"
+          ref={this.calendarRef}
           windowSize={2}
           initialNumToRender={2}
           initialScrollIndex={this.props.size}
@@ -192,17 +179,6 @@ export default class EventCalendar extends React.Component {
           renderItem={this._renderItem.bind(this)}
           style={{ width: width, backgroundColor: 'rgba(5, 0, 2, 0.05)' }}
           scrollEnabled={false}
-          onMomentumScrollEnd={event => {
-            const index = parseInt(event.nativeEvent.contentOffset.x / width);
-            const date = moment(this.props.initDate).add(
-              index - this.props.size,
-              'days'
-            );
-            if (this.props.dateChanged) {
-              this.props.dateChanged(date.format('YYYY-MM-DD'));
-            }
-            this.setState({ index, date });
-          }}
           {...virtualizedListProps}
         />
       </View>
