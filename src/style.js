@@ -1,4 +1,3 @@
-// @flow
 import { StyleSheet } from 'react-native';
 
 // const eventPaddingLeft = 4
@@ -18,11 +17,11 @@ export default function styleConstructor(theme = {}, calendarHeight) {
     },
     header: {
       paddingHorizontal: 30,
-      height: 50,
+      paddingVertical: 20,
       borderTopWidth: 1,
       borderBottomWidth: 1,
       borderColor: '#E6E8F0',
-      backgroundColor: '#F5F5F6',
+      backgroundColor: '#FFFFFF',
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'stretch',
@@ -30,6 +29,8 @@ export default function styleConstructor(theme = {}, calendarHeight) {
     },
     headerTextContainer: {
       justifyContent: 'center',
+      alignItems: 'center',
+      textAlign: 'center'
     },
     headerText: {
       fontSize: 16,
@@ -48,10 +49,8 @@ export default function styleConstructor(theme = {}, calendarHeight) {
     },
     event: {
       position: 'absolute',
-      backgroundColor: '#F0F4FF',
       opacity: 0.8,
-      borderColor: '#DDE5FD',
-      borderWidth: 1,
+      borderWidth: 2,
       borderRadius: 5,
       paddingLeft: 4,
       minHeight: 25,
@@ -62,6 +61,14 @@ export default function styleConstructor(theme = {}, calendarHeight) {
       alignItems: 'flex-start',
       overflow: 'hidden',
       ...theme.event,
+    },
+    eventMale: {
+      backgroundColor: 'rgba(47, 71, 171, 0.1)',
+      borderColor: 'rgba(47, 71, 171, 0.5)'
+    },
+    eventFemale: {
+      backgroundColor: 'rgba(171, 47, 94, 0.1)',
+      borderColor: 'rgba(171, 47, 94, 0.5)'
     },
     eventTitle: {
       color: '#615B73',
@@ -87,7 +94,7 @@ export default function styleConstructor(theme = {}, calendarHeight) {
       height: 1,
       position: 'absolute',
       left: leftMargin,
-      backgroundColor: 'rgb(216,216,216)',
+      backgroundColor: 'rgba(5, 0, 2, 0.1)',
       ...theme.line,
     },
     lineNow: {
