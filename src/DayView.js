@@ -1,4 +1,3 @@
-// @flow
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import populateEvents from './Packer';
 import React from 'react';
@@ -33,13 +32,6 @@ export default class DayView extends React.PureComponent {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    const width = nextProps.width - LEFT_MARGIN;
-    this.setState({
-      packedEvents: populateEvents(nextProps.events, width, nextProps.start),
-    });
-  }
-
   componentDidMount() {
     this.props.scrollToFirst && this.scrollToFirst();
   }
@@ -56,28 +48,6 @@ export default class DayView extends React.PureComponent {
     }, 1);
   }
 
-  _renderRedLine() {
-    const offset = 100;
-    const { format24h } = this.props;
-    const { width, styles } = this.props;
-    const timeNowHour = moment().hour();
-    const timeNowMin = moment().minutes();
-    return (
-      <View
-        key={`timeNow`}
-        style={[
-          styles.lineNow,
-          {
-            top:
-              offset * (timeNowHour - this.props.start) +
-              (offset * timeNowMin) / 60,
-            width: width - 20,
-          },
-        ]}
-      />
-    );
-  }
-
   _renderLines() {
     const { format24h, start, end } = this.props;
     const offset = this.calendarHeight / (end - start);
@@ -87,13 +57,13 @@ export default class DayView extends React.PureComponent {
       if (i === start) {
         timeText = ``;
       } else if (i < 12) {
-        timeText = !format24h ? `${i} AM` : i;
+        timeText = !format24h ? `${i} AM` : `${i}:00`;
       } else if (i === 12) {
-        timeText = !format24h ? `${i} PM` : i;
+        timeText = !format24h ? `${i} PM` : `${i}:00`;
       } else if (i === 24) {
-        timeText = !format24h ? `12 AM` : 0;
+        timeText = !format24h ? `12 AM` : '00:00';
       } else {
-        timeText = !format24h ? `${i - 12} PM` : i;
+        timeText = !format24h ? `${i - 12} PM` : `${i}:00`;
       }
       const { width, styles } = this.props;
       return [
@@ -145,10 +115,6 @@ export default class DayView extends React.PureComponent {
         top: event.top,
       };
 
-      const eventColor = {
-        backgroundColor: event.color,
-      };
-
       // Fixing the number of lines for the event title makes this calculation easier.
       // However it would make sense to overflow the title to a new line if needed
       const numberOfLines = Math.floor(event.height / TEXT_LINE_HEIGHT);
@@ -159,31 +125,22 @@ export default class DayView extends React.PureComponent {
           onPress={() =>
             this._onEventTapped(this.props.events[event.index])
           }
-          key={i} style={[styles.event, style, event.color && eventColor]}
+          key={i} style={[styles.event, style, (event.gender === 'female' ? styles.eventFemale : styles.eventMale)]}
         >
           {this.props.renderEvent ? (
             this.props.renderEvent(event)
           ) : (
-            <View>
-              <Text numberOfLines={1} style={styles.eventTitle}>
-                {event.title || 'Event'}
-              </Text>
-              {numberOfLines > 1 ? (
-                <Text
-                  numberOfLines={numberOfLines - 1}
-                  style={[styles.eventSummary]}
-                >
-                  {event.summary || ' '}
-                </Text>
-              ) : null}
-              {numberOfLines > 2 ? (
-                <Text style={styles.eventTimes} numberOfLines={1}>
-                  {moment(event.start).format(formatTime)} -{' '}
-                  {moment(event.end).format(formatTime)}
-                </Text>
-              ) : null}
+              <View>
+                {numberOfLines > 1 ? (
+                  <Text
+                    numberOfLines={numberOfLines - 1}
+                    style={[styles.eventSummary]}
+                  >
+                    {event.gender || ' '}
+                  </Text>
+                ) : null}
               </View>
-          )}
+            )}
         </TouchableOpacity>
       );
     });
@@ -202,12 +159,11 @@ export default class DayView extends React.PureComponent {
         ref={ref => (this._scrollView = ref)}
         contentContainerStyle={[
           styles.contentStyle,
-          { width: this.props.width },
+          { width: this.props.width, backgroundColor: 'rgba(5, 0, 2, 0.05)' },
         ]}
       >
         {this._renderLines()}
         {this._renderEvents()}
-        {this._renderRedLine()}
       </ScrollView>
     );
   }
