@@ -19,6 +19,8 @@ function range(from, to) {
 export default class DayView extends React.PureComponent {
   constructor(props) {
     super(props);
+    this.scrollViewRef = React.createRef();
+
     this.calendarHeight = (props.end - props.start) * 100;
     const width = props.width - LEFT_MARGIN;
     const packedEvents = populateEvents(props.events, width, props.start);
@@ -33,13 +35,13 @@ export default class DayView extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.props.scrollToFirst && this.scrollToFirst();
+    this.scrollToFirst();
   }
 
   scrollToFirst() {
     setTimeout(() => {
-      if (this.state && this.state._scrollY && this._scrollView) {
-        this._scrollView.scrollTo({
+      if (this.state && this.state._scrollY && this.scrollViewRef) {
+        this.scrollViewRef.current.scrollTo({
           x: 0,
           y: this.state._scrollY,
           animated: true,
@@ -49,21 +51,19 @@ export default class DayView extends React.PureComponent {
   }
 
   _renderLines() {
-    const { format24h, start, end } = this.props;
+    const { start, end } = this.props;
     const offset = this.calendarHeight / (end - start);
 
     return range(start, end + 1).map((i, index) => {
       let timeText;
       if (i === start) {
         timeText = ``;
-      } else if (i < 12) {
-        timeText = !format24h ? `${i} AM` : `${i}:00`;
-      } else if (i === 12) {
-        timeText = !format24h ? `${i} PM` : `${i}:00`;
+      } else if (i < 10) {
+        timeText = `0${i}:00`;
       } else if (i === 24) {
-        timeText = !format24h ? `12 AM` : '00:00';
+        timeText = '00:00';
       } else {
-        timeText = !format24h ? `${i - 12} PM` : `${i}:00`;
+        timeText = `${i}:00`;
       }
       const { width, styles } = this.props;
       return [
@@ -115,10 +115,6 @@ export default class DayView extends React.PureComponent {
         top: event.top,
       };
 
-      // Fixing the number of lines for the event title makes this calculation easier.
-      // However it would make sense to overflow the title to a new line if needed
-      const numberOfLines = Math.floor(event.height / TEXT_LINE_HEIGHT);
-      const formatTime = this.props.format24h ? 'HH:mm' : 'hh:mm A';
       return (
         <TouchableOpacity
           activeOpacity={0.5}
@@ -127,20 +123,14 @@ export default class DayView extends React.PureComponent {
           }
           key={i} style={[styles.event, style, (event.gender === 'female' ? styles.eventFemale : styles.eventMale)]}
         >
-          {this.props.renderEvent ? (
-            this.props.renderEvent(event)
-          ) : (
+          {(
+            <View>
+              <Text numberOfLines={1}>{event.title}</Text>
               <View>
-                {numberOfLines > 1 ? (
-                  <Text
-                    numberOfLines={numberOfLines - 1}
-                    style={[styles.eventSummary]}
-                  >
-                    {event.gender || ' '}
-                  </Text>
-                ) : null}
+                <Text numberOfLines={1}>{event.gender}</Text>
               </View>
-            )}
+            </View>
+          )}
         </TouchableOpacity>
       );
     });
@@ -156,11 +146,12 @@ export default class DayView extends React.PureComponent {
     const { styles } = this.props;
     return (
       <ScrollView
-        ref={ref => (this._scrollView = ref)}
+        ref={this.scrollViewRef}
         contentContainerStyle={[
           styles.contentStyle,
           { width: this.props.width, backgroundColor: 'rgba(5, 0, 2, 0.05)' },
         ]}
+        showsVerticalScrollIndicator={false}
       >
         {this._renderLines()}
         {this._renderEvents()}
